@@ -1,5 +1,10 @@
 package models
 
+import (
+	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
+)
+
 // User represents a user in the system
 // @Description User object contains user information.
 type UserCreate struct {
@@ -40,45 +45,37 @@ type UserUpdate struct {
 }
 
 type UserDTO struct {
-	Id *string `json:"-"` // This field will be ignored by Swagger as it's unexported (private)
-	// HashId is the public identifier for the user
-	HashId *string `json:"id"` // HashId is a UUID
-	// UserName is the user's username, between 5 and 50 characters
-	UserName *string `json:"user_name"`
-	// FirstName is the user's first name, between 5 and 50 characters
-	FirstName *string `json:"first_name"`
-	// LastName is the user's last name, between 5 and 50 characters
-	LastName *string `json:"last_name"`
-	// Email is the user's email address, must be a valid email format
-	Email *string `json:"email"`
-	// UserStatus is the user's status, must be exactly 1 character and contain "IAT"
-	UserStatus *string `json:"user_status"`
-	// Department is the user's department, can be null
-	Department *string `json:"department"`
+	// Id is the internal database identifier; omit from JSON output.
+	Id uuid.UUID `gorm:"column:id;type:uuid;primaryKey" json:"-"`
+	// HashId is the public identifier for the user (varchar(64)).
+	HashId string `gorm:"column:hash" json:"id"`
+	// UserName is the user's username, between 5 and 50 characters.
+	UserName string `gorm:"column:user_name" json:"user_name"`
+	// FirstName is the user's first name, between 5 and 50 characters.
+	FirstName string `gorm:"column:first_name" json:"first_name"`
+	// LastName is the user's last name, between 5 and 50 characters.
+	LastName string `gorm:"column:last_name" json:"last_name"`
+	// Email is the user's email address, must be a valid email format.
+	Email string `gorm:"column:email" json:"email"`
+	// UserStatus is the user's status, must be exactly 1 character and contain "IAT".
+	UserStatus string `gorm:"column:user_status" json:"user_status"`
+	// Department is the user's department, can be null.
+	Department *string `gorm:"column:department" json:"department"`
 }
 
-func CreateToDTO(userCreate UserCreate) UserDTO {
-	return UserDTO{
-		Id:         userCreate.Id,
-		HashId:     userCreate.HashId,
-		UserName:   userCreate.UserName,
-		FirstName:  userCreate.FirstName,
-		LastName:   userCreate.LastName,
-		Email:      userCreate.Email,
-		UserStatus: userCreate.UserStatus,
-		Department: userCreate.Department,
-	}
+// TableName sets the table name for UserDTO to "users".
+func (UserDTO) TableName() string {
+	return "users"
 }
 
-func UpdateToDTO(userUpdate UserUpdate) UserDTO {
-	return UserDTO{
-		Id:         userUpdate.Id,
-		HashId:     userUpdate.HashId,
-		UserName:   userUpdate.UserName,
-		FirstName:  userUpdate.FirstName,
-		LastName:   userUpdate.LastName,
-		Email:      userUpdate.Email,
-		UserStatus: userUpdate.UserStatus,
-		Department: userUpdate.Department,
-	}
+func CreateToDTO(userCreate UserCreate) *UserDTO {
+	var user UserDTO
+	copier.Copy(&user, &userCreate)
+	return &user
+}
+
+func UpdateToDTO(userUpdate UserUpdate) *UserDTO {
+	var user UserDTO
+	copier.Copy(&user, &userUpdate)
+	return &user
 }

@@ -23,8 +23,8 @@ func main() {
 	server.Use(middleware.Recover())
 	server.Use(middleware.Logger())
 
-	// failsafe in case normal requests don't work for you
-	server.GET("/swagger", echoSwagger.WrapHandler)
+	// Define main routes
+	server.GET("/swagger/*", echoSwagger.WrapHandler)
 	server.GET("/", controller.Home)
 	server.GET("/users", controller.GetUsers)
 	server.GET("/user/:id", controller.GetUser)
@@ -32,16 +32,7 @@ func main() {
 	server.PUT("/user/:id", controller.UpdateUser)
 	server.DELETE("/user/:id", controller.DeleteUser)
 
-	// have proxy requests work
-	api := server.Group("/api")
-	api.GET("/swagger/*", echoSwagger.WrapHandler)
-	api.GET("/", controller.Home)
-	api.GET("/users", controller.GetUsers)
-	api.GET("/user/:id", controller.GetUser)
-	api.POST("/user", controller.CreateUser)
-	api.PUT("/user/:id", controller.UpdateUser)
-	api.DELETE("/user/:id", controller.DeleteUser)
-
+	// Start the server
 	server.Logger.Info("Server is running...")
 	port := os.Getenv("BACKEND_PORT")
 	if port != "" {
